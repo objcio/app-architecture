@@ -3,6 +3,10 @@ import AVFoundation
 import RxSwift
 import RxCocoa
 
+protocol RecordViewControllerDelegate: class {
+	func finishedRecording(_ recordVC: RecordViewController)
+}
+
 final class RecordViewController: UIViewController, AVAudioRecorderDelegate {
 	let viewModel = RecordViewModel()
 	let disposeBag = DisposeBag()

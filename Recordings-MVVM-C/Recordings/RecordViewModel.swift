@@ -1,10 +1,6 @@
 import Foundation
 import RxSwift
 
-protocol RecordViewControllerDelegate: class {
-	func finishedRecording(_ recordVC: RecordViewController)
-}
-
 final class RecordViewModel {
 	// Inputs
 	var folder: Folder? = nil
