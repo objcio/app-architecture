@@ -39,8 +39,8 @@ class FolderViewController: UITableViewController {
 		
 		// Handle changes to contents
 		if let changeReason = userInfo[Item.changeReasonKey] as? String {
-			let oldValue = userInfo[Item.newValueKey]
-			let newValue = userInfo[Item.oldValueKey]
+			let oldValue = userInfo[Item.oldValueKey]
+			let newValue = userInfo[Item.newValueKey]
 			switch (changeReason, newValue, oldValue) {
 			case let (Item.removed, _, (oldIndex as Int)?):
 				tableView.deleteRows(at: [IndexPath(row: oldIndex, section: 0)], with: .right)
