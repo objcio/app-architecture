@@ -1,16 +1,16 @@
 import UIKit
 import AVFoundation
 
-class PlayViewController: UIViewController, UITextFieldDelegate, AVAudioPlayerDelegate {
-	@IBOutlet var nameTextField: UITextField!
-	@IBOutlet var playButton: UIButton!
-	@IBOutlet var progressLabel: UILabel!
-	@IBOutlet var durationLabel: UILabel!
-	@IBOutlet var progressSlider: UISlider!
-	@IBOutlet var noRecordingLabel: UILabel!
-	@IBOutlet var activeItemElements: UIView!
+class PlayViewController: UIViewController {
+	@IBOutlet private var nameTextField: UITextField!
+	@IBOutlet private var playButton: UIButton!
+	@IBOutlet private var progressLabel: UILabel!
+	@IBOutlet private var durationLabel: UILabel!
+	@IBOutlet private var progressSlider: UISlider!
+	@IBOutlet private var noRecordingLabel: UILabel!
+	@IBOutlet private var activeItemElements: UIView!
 	
-	var audioPlayer: Player?
+	private var audioPlayer: Player?
 	var recording: Recording? {
 		didSet {
 			updateForChangedRecording()
@@ -27,12 +27,12 @@ class PlayViewController: UIViewController, UITextFieldDelegate, AVAudioPlayerDe
 		NotificationCenter.default.addObserver(self, selector: #selector(storeChanged(notification:)), name: Store.changedNotification, object: nil)
 	}
 
-	@objc func storeChanged(notification: Notification) {
+	@objc private func storeChanged(notification: Notification) {
 		guard let item = notification.object as? Item, item === recording else { return }
 		updateForChangedRecording()
 	}
 	
-	func updateForChangedRecording() {
+	private func updateForChangedRecording() {
 		if let r = recording, let url = r.fileURL {
 			audioPlayer = Player(url: url) { [weak self] time in
 				if let t = time {
@@ -60,7 +60,7 @@ class PlayViewController: UIViewController, UITextFieldDelegate, AVAudioPlayerDe
 		}
 	}
 	
-	func updateProgressDisplays(progress: TimeInterval, duration: TimeInterval) {
+	private func updateProgressDisplays(progress: TimeInterval, duration: TimeInterval) {
 		progressLabel?.text = timeString(progress)
 		durationLabel?.text = timeString(duration)
 		progressSlider?.maximumValue = Float(duration)
@@ -68,7 +68,7 @@ class PlayViewController: UIViewController, UITextFieldDelegate, AVAudioPlayerDe
 		updatePlayButton()
 	}
 	
-	func updatePlayButton() {
+	private func updatePlayButton() {
 		if audioPlayer?.isPlaying == true {
 			playButton?.setTitle(.pause, for: .normal)
 		} else if audioPlayer?.isPaused == true {
@@ -78,24 +78,12 @@ class PlayViewController: UIViewController, UITextFieldDelegate, AVAudioPlayerDe
 		}
 	}
 	
-	func textFieldDidEndEditing(_ textField: UITextField) {
-		if let r = recording, let text = textField.text {
-			r.setName(text)
-			title = r.name
-		}
-	}
-	
-	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		textField.resignFirstResponder()
-		return true
-	}
-	
-	@IBAction func setProgress() {
+	@IBAction private func setProgress() {
 		guard let s = progressSlider else { return }
 		audioPlayer?.setProgress(TimeInterval(s.value))
 	}
 	
-	@IBAction func play() {
+	@IBAction private func play() {
 		audioPlayer?.togglePlay()
 		updatePlayButton()
 	}
@@ -118,6 +106,27 @@ class PlayViewController: UIViewController, UITextFieldDelegate, AVAudioPlayerDe
 			self.recording = recording
 		}
 	}
+
+	deinit {
+		NotificationCenter.default.removeObserver(self)
+	}
+
+}
+
+extension PlayViewController: UITextFieldDelegate {
+
+	func textFieldDidEndEditing(_ textField: UITextField) {
+		if let r = recording, let text = textField.text {
+			r.setName(text)
+			title = r.name
+		}
+	}
+
+	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+		textField.resignFirstResponder()
+		return true
+	}
+
 }
 
 fileprivate extension String {

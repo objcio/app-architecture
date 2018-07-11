@@ -20,7 +20,7 @@ extension UIViewController {
 		alert.addAction(UIAlertAction(title: cancel, style: .cancel) { _ in
 			callback(nil)
 		})
-		alert.addAction(UIAlertAction(title: accept, style: .default) { _ in
+		alert.addAction(UIAlertAction(title: accept, style: .default) { [unowned alert] _ in
 			callback(alert.textFields?.first?.text)
 		})
 		present(alert, animated: true)

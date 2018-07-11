@@ -1,11 +1,11 @@
 import Foundation
 import AVFoundation
 
-final class Recorder: NSObject, AVAudioRecorderDelegate {
+final class Recorder: NSObject {
 	private var audioRecorder: AVAudioRecorder?
 	private var timer: Timer?
-	private var update: (TimeInterval?) -> ()
-	let url: URL
+	private let update: (TimeInterval?) -> ()
+	private let url: URL
 	
 	init?(url: URL, update: @escaping (TimeInterval?) -> ()) {
 		self.update = update
@@ -50,7 +50,11 @@ final class Recorder: NSObject, AVAudioRecorderDelegate {
 		audioRecorder?.stop()
 		timer?.invalidate()
 	}
-	
+
+}
+
+extension Recorder: AVAudioRecorderDelegate {
+
 	func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
 		if flag {
 			stop()
@@ -58,4 +62,5 @@ final class Recorder: NSObject, AVAudioRecorderDelegate {
 			update(nil)
 		}
 	}
+
 }
