@@ -21,7 +21,7 @@ class FolderViewController: UITableViewController {
 		NotificationCenter.default.addObserver(self, selector: #selector(handleChangeNotification(_:)), name: Store.changedNotification, object: nil)
 	}
 	
-	@objc func handleChangeNotification(_ notification: Notification) {
+	@objc private func handleChangeNotification(_ notification: Notification) {
 		// Handle changes to the current folder
 		if let item = notification.object as? Folder, item === folder {
 			let reason = notification.userInfo?[Item.changeReasonKey] as? String
@@ -56,7 +56,7 @@ class FolderViewController: UITableViewController {
 		}
 	}
 	
-	var selectedItem: Item? {
+	private var selectedItem: Item? {
 		if let indexPath = tableView.indexPathForSelectedRow {
 			return folder.contents[indexPath.row]
 		}

@@ -5,7 +5,7 @@ final class Store {
 	static private let documentDirectory = try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
 	static let shared = Store(url: documentDirectory)
 	
-	let baseURL: URL?
+	private let baseURL: URL?
 	var placeholder: URL?
 	private(set) var rootFolder: Folder
 	

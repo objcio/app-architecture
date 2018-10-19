@@ -1,10 +1,10 @@
 import Foundation
 import AVFoundation
 
-class Player: NSObject, AVAudioPlayerDelegate {
-	private var audioPlayer: AVAudioPlayer
+class Player: NSObject {
+	private let audioPlayer: AVAudioPlayer
 	private var timer: Timer?
-	private var update: (TimeInterval?) -> ()
+	private let update: (TimeInterval?) -> ()
 	
 	init?(url: URL, update: @escaping (TimeInterval?) -> ()) {
 		do {
@@ -46,12 +46,6 @@ class Player: NSObject, AVAudioPlayerDelegate {
 	func setProgress(_ time: TimeInterval) {
 		audioPlayer.currentTime = time
 	}
-
-	func audioPlayerDidFinishPlaying(_ pl: AVAudioPlayer, successfully flag: Bool) {
-		timer?.invalidate()
-		timer = nil
-		update(flag ? audioPlayer.currentTime : nil)
-	}
 	
 	var duration: TimeInterval {
 		return audioPlayer.duration
@@ -68,4 +62,14 @@ class Player: NSObject, AVAudioPlayerDelegate {
 	deinit {
 		timer?.invalidate()
 	}
+}
+
+extension Player: AVAudioPlayerDelegate {
+
+	func audioPlayerDidFinishPlaying(_ pl: AVAudioPlayer, successfully flag: Bool) {
+		timer?.invalidate()
+		timer = nil
+		update(flag ? audioPlayer.currentTime : nil)
+	}
+
 }
