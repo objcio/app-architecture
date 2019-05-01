@@ -33,11 +33,11 @@ struct TextField<Message> {
 
 struct StackView<Message> {
     let views: [View<Message>]
-    let axis: UILayoutConstraintAxis
-    let distribution: UIStackViewDistribution
+    let axis: NSLayoutConstraint.Axis
+    let distribution: UIStackView.Distribution
     let backgroundColor: UIColor
     
-    init(views: [View<Message>], axis: UILayoutConstraintAxis = .vertical, distribution: UIStackViewDistribution = .equalCentering, backgroundColor: UIColor = .white) {
+    init(views: [View<Message>], axis: NSLayoutConstraint.Axis = .vertical, distribution: UIStackView.Distribution = .equalCentering, backgroundColor: UIColor = .white) {
         self.views = views
         self.axis = axis
         self.distribution = distribution
@@ -65,16 +65,17 @@ struct TableViewCell<Message>: Hashable {
     static func ==(lhs: TableViewCell<Message>, rhs: TableViewCell<Message>) -> Bool {
         return lhs.identity == rhs.identity && lhs.text == rhs.text && lhs.accessory == rhs.accessory
     }
-    var hashValue: Int {
-        return identity.hashValue
-    }
     
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identity)
+    }
+
     let identity: AnyHashable
     let text: String
     let onSelect: Message?
     let onDelete: Message?
-    let accessory: UITableViewCellAccessoryType
-    init(identity: AnyHashable, text: String, onSelect: Message?, accessory: UITableViewCellAccessoryType = .none, onDelete: Message?) {
+    let accessory: UITableViewCell.AccessoryType
+    init(identity: AnyHashable, text: String, onSelect: Message?, accessory: UITableViewCell.AccessoryType = .none, onDelete: Message?) {
         self.identity = identity
         self.text = text
         self.accessory = accessory
@@ -105,7 +106,7 @@ struct Slider<Message> {
 enum BarButtonItem<Message> {
     case none
     case builtin(UIBarButtonItem)
-    case system(UIBarButtonSystemItem, action: Message)
+    case system(UIBarButtonItem.SystemItem, action: Message)
     case custom(text: String, action: Message)
     case editButtonItem
     
@@ -140,7 +141,7 @@ struct Space {
 }
 
 struct ActivityIndicator {
-    let style: UIActivityIndicatorViewStyle
+    let style: UIActivityIndicatorView.Style
 }
 
 typealias Constraint = (_ child: UIView, _ parent: UIView) -> NSLayoutConstraint
@@ -221,7 +222,7 @@ extension View {
         return ._imageView(ImageView(image: image))
     }
     
-    static func stackView(views: [View<Message>], axis: UILayoutConstraintAxis = .vertical, distribution: UIStackViewDistribution = .equalCentering, backgroundColor: UIColor = .white) -> View {
+    static func stackView(views: [View<Message>], axis: NSLayoutConstraint.Axis = .vertical, distribution: UIStackView.Distribution = .equalCentering, backgroundColor: UIColor = .white) -> View {
         return ._stackView(StackView(views: views, axis: axis, distribution: distribution, backgroundColor: backgroundColor))
     }
     
@@ -237,7 +238,7 @@ extension View {
         return ._space(Space(width: width, height: height))
     }
     
-    static func activityIndicator(style: UIActivityIndicatorViewStyle = .white) -> View {
+    static func activityIndicator(style: UIActivityIndicatorView.Style = .white) -> View {
         return ._activityIndicator(ActivityIndicator(style: style))
     }
 }
