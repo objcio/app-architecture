@@ -32,7 +32,7 @@ final class NCDelegate: NSObject, UINavigationControllerDelegate {
 		self.popDetail = popDetail
 	}
 	
-	func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+	func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
 		if operation == .pop {
 			if (navigationController.splitViewController?.delegate as? SplitViewControllerDelegate)?.detailViewController === fromVC {
 				popDetail()
@@ -67,7 +67,7 @@ class TableViewBacking<A>: NSObject, UITableViewDataSource, UITableViewDelegate 
 		return cell
 	}
 	
-	func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+	func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
 		if editingStyle == .delete, let action = cells[indexPath.row].onDelete {
 			callback?(action)
 		}
@@ -299,8 +299,8 @@ struct Renderer<Message> {
 	}
 	
 	func childViewController(for existing: UIView) -> UIViewController? {
-		guard let i = container.childViewControllers.index(where: { $0.view == existing }) else { return nil }
-		return container.childViewControllers[i]
+		guard let i = container.children.firstIndex(where: { $0.view == existing }) else { return nil }
+		return container.children[i]
 	}
 	
 	mutating func render(view: View<Message>) -> UIView {
@@ -347,13 +347,13 @@ struct Renderer<Message> {
 			}
 			return v
 		case let ._activityIndicator(indicator):
-			let result = UIActivityIndicatorView(activityIndicatorStyle: indicator.style)
+			let result = UIActivityIndicatorView(style: indicator.style)
 			result.startAnimating()
 			return result
 		case ._childViewController(let vc):
 			var result = UIViewController()
 			strongReferences.append(vc.render(callback: callback, change: &result))
-			container.addChildViewController(result)
+			container.addChild(result)
 			addedChildViewControllers.append(result)
 			return result.view
 		case ._customLayout(let views):
@@ -370,10 +370,10 @@ struct Renderer<Message> {
 	}
 	
 	mutating func removeChildViewController(for view: UIView) {
-		guard let i = container.childViewControllers.index(where: { $0.view == view }) else { return }
+		guard let i = container.children.firstIndex(where: { $0.view == view }) else { return }
 		
-		let child = container.childViewControllers[i]
-		child.willMove(toParentViewController: nil)
+		let child = container.children[i]
+		child.willMove(toParent: nil)
 		removedChildViewControllers.append(child)
 	}
 	
@@ -415,7 +415,7 @@ struct Renderer<Message> {
 				removeChildViewController(for: existing)
 				return render(view: view)
 			}
-			a.activityIndicatorViewStyle = indicator.style
+			a.style = indicator.style
 			return a
 		case let ._textField(textField):
 			guard let result = existing as? UITextField else {
@@ -453,9 +453,9 @@ struct Renderer<Message> {
 			var resultVC = existingVC
 			strongReferences.append(vc.render(callback: callback, change: &resultVC))
 			if resultVC != existingVC {
-				existingVC.willMove(toParentViewController: nil)
+				existingVC.willMove(toParent: nil)
 				removedChildViewControllers.append(existingVC)
-				container.addChildViewController(resultVC)
+				container.addChild(resultVC)
 				addedChildViewControllers.append(resultVC)
 			}
 			return resultVC.view
@@ -522,7 +522,7 @@ extension SplitViewController {
 		let n = UINavigationController()
 		n.navigationBar.barTintColor = .blueTint
 		n.navigationBar.tintColor = .orangeTint
-		n.navigationBar.titleTextAttributes = [NSAttributedStringKey(rawValue: NSAttributedStringKey.foregroundColor.rawValue): UIColor.white]
+		n.navigationBar.titleTextAttributes = [NSAttributedString.Key(rawValue: NSAttributedString.Key.foregroundColor.rawValue): UIColor.white]
 		return n
 	}
 	
@@ -624,10 +624,10 @@ extension ViewController {
 				])
 			}
 			for removed in r.removedChildViewControllers {
-				removed.removeFromParentViewController()
+				removed.removeFromParent()
 			}
 			for added in r.addedChildViewControllers {
-				added.didMove(toParentViewController: change)
+				added.didMove(toParent: change)
 			}
 			return r.strongReferences
 		case .splitViewController(let newSVC, let modal):
