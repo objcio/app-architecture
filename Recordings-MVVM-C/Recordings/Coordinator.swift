@@ -14,7 +14,7 @@ final class Coordinator {
 		
 		let folderVC = folderNavigationController.viewControllers.first as! FolderViewController
 		folderVC.delegate = self
-		folderVC.viewModel.folder.value = Store.shared.rootFolder
+		folderVC.viewModel.folder.onNext(Store.shared.rootFolder)
 		folderVC.navigationItem.leftItemsSupplementBackButton = true
 		folderVC.navigationItem.leftBarButtonItem = folderVC.editButtonItem
 		
@@ -30,7 +30,10 @@ final class Coordinator {
 	
 	func updateForRemoval(of folder: Folder) {
 		let folderVCs = folderNavigationController.viewControllers as! [FolderViewController]
-		guard let index = folderVCs.index(where: { $0.viewModel.folder.value === folder }) else { return }
+		guard let index = folderVCs.index(where: {
+			guard let viewModelFolder = try? $0.viewModel.folder.value() else { return false }
+			return viewModelFolder === folder
+		}) else { return }
 		let previousIndex = index > 0 ? index - 1 : index
 		folderNavigationController.popToViewController(folderVCs[previousIndex], animated: true)
 	}
@@ -68,7 +71,7 @@ extension UIStoryboard {
 	func instantiatePlayerNavigationController(with recording: Recording, leftBarButtonItem: UIBarButtonItem) -> UINavigationController {
 		let playerNC = instantiateViewController(withIdentifier: "playerNavigationController") as! UINavigationController
 		let playerVC = playerNC.viewControllers[0] as! PlayViewController
-		playerVC.viewModel.recording.value = recording
+		playerVC.viewModel.recording.onNext(recording)
 		playerVC.navigationItem.leftBarButtonItem = leftBarButtonItem
 		playerVC.navigationItem.leftItemsSupplementBackButton = true
 		return playerNC
@@ -76,7 +79,7 @@ extension UIStoryboard {
 	
 	func instantiateFolderViewController(with folder: Folder, delegate: FolderViewControllerDelegate) -> FolderViewController {
 		let folderVC = instantiateViewController(withIdentifier: "folderController") as! FolderViewController
-		folderVC.viewModel.folder.value = folder
+		folderVC.viewModel.folder.onNext(folder)
 		folderVC.delegate = delegate
 		folderVC.navigationItem.leftItemsSupplementBackButton = true
 		folderVC.navigationItem.leftBarButtonItem = folderVC.editButtonItem

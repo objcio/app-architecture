@@ -16,6 +16,8 @@ class FolderViewController: UITableViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		tableView.delegate = nil
+		tableView.dataSource = nil
 		viewModel.navigationTitle.bind(to: rx.title).disposed(by: disposeBag)
 		viewModel.folderContents.bind(to: tableView.rx.items(dataSource: dataSource)).disposed(by: disposeBag)
 		tableView.rx.modelDeleted(Item.self)
@@ -48,20 +50,26 @@ class FolderViewController: UITableViewController {
 	}
 	
 	@IBAction func createNewRecording(_ sender: Any) {
-		delegate?.createRecording(in: viewModel.folder.value)
+		guard let folder = try? viewModel.folder.value() else {
+			return
+		}
+		delegate?.createRecording(in: folder)
 	}
 	
 	// MARK: UIStateRestoring
 	
 	override func encodeRestorableState(with coder: NSCoder) {
 		super.encodeRestorableState(with: coder)
-		coder.encode(viewModel.folder.value.uuidPath, forKey: .uuidPathKey)
+		guard let uuidPath = try? viewModel.folder.value().uuidPath else {
+			return
+		}
+		coder.encode(uuidPath, forKey: .uuidPathKey)
 	}
 
 	override func decodeRestorableState(with coder: NSCoder) {
 		super.decodeRestorableState(with: coder)
 		if let uuidPath = coder.decodeObject(forKey: .uuidPathKey) as? [UUID], let folder = Store.shared.item(atUUIDPath: uuidPath) as? Folder {
-			self.viewModel.folder.value = folder
+			self.viewModel.folder.onNext(folder)
 		} else {
 			if var controllers = navigationController?.viewControllers, let index = controllers.index(where: { $0 === self }) {
 				controllers.remove(at: index)

@@ -4,7 +4,7 @@ import RxCocoa
 import AVFoundation
 
 class PlayViewModel {
-	let recording: Variable<Recording?> = Variable(nil)
+	let recording: BehaviorSubject<Recording?> = BehaviorSubject(value: nil)
 	let playState: Observable<Player.State?>
 	let togglePlay = PublishSubject<()>()
 	let setProgress = PublishSubject<TimeInterval>()
@@ -17,12 +17,15 @@ class PlayViewModel {
 			// Every time the folder changes
 			.flatMapLatest { recording -> Observable<Recording?> in
 				guard let currentRecording = recording else { return Observable.just(nil) }
+				
 				// Start by emitting the current recording
-				return Observable.just(currentRecording)
 				// Re-emit the recording every time a non-delete change occurs
-				.concat(currentRecording.changeObservable.map { _ in currentRecording })
+				return Observable.concat(
+					Observable.just(currentRecording),
+					currentRecording.changeObservable.map { _ in currentRecording }
+				)
 				// Stop when a delete occurs
-				.takeUntil(currentRecording.deletedObservable)
+				.take(until: currentRecording.deletedObservable)
 				// After a delete, set the current recording back to `nil`
 				.concat(Observable.just(nil))
 			}.share(replay: 1)
@@ -55,8 +58,8 @@ class PlayViewModel {
 	}
 	
 	func nameChanged(_ name: String?) {
-		guard let r = recording.value, let text = name else { return }
-		r.setName(text)
+		guard let r = try? recording.value(), let text = name else { return }
+		r?.setName(text)
 	}
 	
 	var navigationTitle: Observable<String> {
@@ -66,7 +69,7 @@ class PlayViewModel {
 		return recordingUntilDeleted.map { $0 != nil }
 	}
 	var noRecording: Observable<Bool> {
-		return hasRecording.map { !$0 }.delay(0, scheduler: MainScheduler())
+		return hasRecording.map { !$0 }.delay(.seconds(0), scheduler: MainScheduler())
 	}
 	var timeLabelText: Observable<String?> {
 		return progress.map { $0.map(timeString) }

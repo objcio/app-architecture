@@ -57,13 +57,16 @@ class PlayViewController: UIViewController, UITextFieldDelegate {
 	
 	override func encodeRestorableState(with coder: NSCoder) {
 		super.encodeRestorableState(with: coder)
-		coder.encode(viewModel.recording.value?.uuidPath, forKey: .uuidPathKey)
+		guard let uuidPath = try? viewModel.recording.value()?.uuidPath else {
+			return
+		}
+		coder.encode(uuidPath, forKey: .uuidPathKey)
 	}
 	
 	override func decodeRestorableState(with coder: NSCoder) {
 		super.decodeRestorableState(with: coder)
 		if let uuidPath = coder.decodeObject(forKey: .uuidPathKey) as? [UUID], let recording = Store.shared.item(atUUIDPath: uuidPath) as? Recording {
-			self.viewModel.recording.value = recording
+			self.viewModel.recording.onNext(recording)
 		}
 	}
 }

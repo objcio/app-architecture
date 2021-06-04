@@ -5,7 +5,7 @@ final class RecordViewModel {
 	// Inputs
 	var folder: Folder? = nil
 	let recording = Recording(name: "", uuid: UUID())
-	let duration = Variable<TimeInterval>(0)
+	let duration = BehaviorSubject<TimeInterval>(value: 0)
 	
 	// Actions
 	func recordingStopped(title: String?) {
@@ -19,7 +19,7 @@ final class RecordViewModel {
 	
 	func recorderStateChanged(time: TimeInterval?) {
 		if let t = time {
-			duration.value = t
+			duration.onNext(t)
 		} else {
 			dismiss?()
 		}

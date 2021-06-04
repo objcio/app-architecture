@@ -4,11 +4,11 @@ import RxCocoa
 import RxDataSources
 
 class FolderViewModel {
-	let folder: Variable<Folder>
+	let folder: BehaviorSubject<Folder>
 	private let folderUntilDeleted: Observable<Folder?>
 	
 	init(initialFolder: Folder = Store.shared.rootFolder) {
-		folder = Variable(initialFolder)
+		folder = BehaviorSubject(value: initialFolder)
 		folderUntilDeleted = folder.asObservable()
 			// Every time the folder changes
 			.flatMapLatest { currentFolder in
@@ -26,11 +26,11 @@ class FolderViewModel {
 	func create(folderNamed name: String?) {
 		guard let s = name else { return }
 		let newFolder = Folder(name: s, uuid: UUID())
-		folder.value.add(newFolder)
+		try? folder.value().add(newFolder)
 	}
 	
 	func deleteItem(_ item: Item) {
-		folder.value.remove(item)
+		try? folder.value().remove(item)
 	}
 	
 	var navigationTitle: Observable<String> {
